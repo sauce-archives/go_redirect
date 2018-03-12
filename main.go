@@ -15,6 +15,7 @@ var (
 func main() {
 	flag.Parse()
 
+	fmt.Printf("Listening on port %d\n", *port)
 	httpErr := http.ListenAndServe(fmt.Sprintf(":%d", *port), http.HandlerFunc(
 		func(w http.ResponseWriter, req *http.Request) {
 			http.Redirect(w, req, *url, http.StatusPermanentRedirect)
@@ -23,5 +24,4 @@ func main() {
 		log.Fatal(httpErr)
 	}
 
-	fmt.Printf("Listening on port %d\n", *port)
 }
