@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 )
@@ -12,14 +13,21 @@ var (
 	url  = flag.String("url", "https://saucelabs.com/blog", "Url to redirect to")
 )
 
+func redirect(w http.ResponseWriter, req *http.Request) {
+	http.Redirect(w, req, *url, http.StatusPermanentRedirect)
+}
+
+func healthcheck(w http.ResponseWriter, req *http.Request) {
+	io.WriteString(w, "OK")
+}
+
 func main() {
 	flag.Parse()
 
 	fmt.Printf("Listening on port %d\n", *port)
-	httpErr := http.ListenAndServe(fmt.Sprintf(":%d", *port), http.HandlerFunc(
-		func(w http.ResponseWriter, req *http.Request) {
-			http.Redirect(w, req, *url, http.StatusPermanentRedirect)
-		}))
+	http.HandleFunc("/healthcheck", healthcheck)
+	http.HandleFunc("/", redirect)
+	httpErr := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if httpErr != nil {
 		log.Fatal(httpErr)
 	}
